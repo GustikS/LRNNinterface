@@ -28,7 +28,7 @@ public class LRNNeval {
     static List<Sample> sampleStore;
 
     static enum Error {
-        acc, mse, ace
+        acc, mse, ace, all
     };
     static Error errorMeasure;
 
@@ -63,11 +63,13 @@ public class LRNNeval {
                 errorMeasure = Error.mse;
             } else if (err.toLowerCase().equals("ace")) {
                 errorMeasure = Error.ace;
+            } else if (err.toLowerCase().equals("all")) {
+                errorMeasure = Error.all;
             }
         } catch (Exception ex) {
             {
-                System.out.println("invalid error measure argument, type only one of the three {acc,mse,ace}, setting default acc");
-                errorMeasure = Error.acc;
+                System.out.println("invalid error measure argument, type only one of the four {acc,mse,ace,all}, setting default all");
+                errorMeasure = Error.all;
             }
         }
 
@@ -77,7 +79,7 @@ public class LRNNeval {
         }
 
         Main.setParameters(cmd);
-        
+
         System.out.println("Successfully started the server with GROUNDING : " + gr + " and ERROR MEASURE : " + errorMeasure);
 
         //these are good weights for avg
@@ -85,10 +87,10 @@ public class LRNNeval {
         //evaluate(weights);
     }
 
-    public static double evaluate(String line) {
+    public static String evaluate(String line) {
         String[] split = line.split("[\\t\\s ,]+");
         double[] weights = new double[split.length];
-        double ress = -1;
+        String ress = "-1";
         try {
             System.out.println("recieved line : " + line);
             System.out.println("vector length : " + split.length);
@@ -101,13 +103,16 @@ public class LRNNeval {
 
         switch (errorMeasure) {
             case acc:
-                ress = evaluateAcc(weights);
+                ress = "acc: " + evaluateAcc(weights);
                 break;
             case mse:
-                ress = evaluateMSE(weights);
+                ress = "mse: " + evaluateMSE(weights);
                 break;
             case ace:
-                ress = evaluateACE(weights);
+                ress = "ace: " + evaluateACE(weights);
+                break;
+            case all:
+                ress = evaluateAll(weights);
                 break;
             default:
                 throw new AssertionError();
@@ -156,5 +161,13 @@ public class LRNNeval {
         sum /= sampleStore.size();  //average cross-entropy
         Glogger.process("All Ground Networks Evaluation : average crossentropy error " + sum + ", acc error " + res.getLearningError() + " (maj: " + res.getMajorityClass() + ")" + " (disp: " + res.getDispersion() + ")");
         return sum;
+    }
+
+    private static String evaluateAll(double[] weights) {
+        String result = "[acc;mse;ace] : ";
+        result += evaluateAcc(weights) + "; ";
+        result += evaluateMSE(weights) + "; ";
+        result += evaluateACE(weights);
+        return result;
     }
 }

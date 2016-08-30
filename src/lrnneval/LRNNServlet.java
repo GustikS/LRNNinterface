@@ -47,7 +47,7 @@ public class LRNNServlet implements Runnable {
                         return;
                     } else {
                         System.out.println(m_num + " -> recieved vector ");
-                        double evaluate = LRNNeval.evaluate(line);
+                        String evaluate = LRNNeval.evaluate(line);
                         //out.write("echo " + line + "\n\r");
                         out.write(evaluate + ",\n");
                         out.flush();
